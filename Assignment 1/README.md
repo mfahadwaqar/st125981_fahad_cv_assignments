@@ -13,22 +13,22 @@ python app.py
 
 # Controls:
 
-Key 1 - RGB to Gray<br>
-Key 2 - RGB to HSV<br>
-Key 3 - Adjust brightness (+/- keys)<br>
-Key 4 - Gaussian filter<br>
-Key 5 - Bilateral filter<br>
-Key 6 - Canny edge detection<br>
-Key 7 - Hough line detection<br>
-Key 8 - Add frame for panorama<br>
-Key 9 - Create panorama<br>
-Key 0 - Augmented Reality<br>
-Key c - Calibrate camera<br>
-Key h - Show histogram<br>
-Key r - Reset to normal view<br>
-Key t - Image transformations<br>
-Key s - Save current frame<br>
-Key ESC - Exit application<br>
+Press 1 - RGB to Gray<br>
+Press 2 - RGB to HSV<br>
+Press 3 - Adjust brightness (+/- keys)<br>
+Press 4 - Gaussian filter<br>
+Press 5 - Bilateral filter<br>
+Press 6 - Canny edge detection<br>
+Press 7 - Hough line detection<br>
+Press 8 - Add frame for panorama<br>
+Press 9 - Create panorama<br>
+Press 0 - Augmented Reality<br>
+Press c - Calibrate camera<br>
+Press h - Show histogram<br>
+Press r - Reset to normal view<br>
+Press t - Image transformations<br>
+Press s - Save current frame<br>
+Press ESC - Exit application<br>
 
 ## Important Notes:
 
