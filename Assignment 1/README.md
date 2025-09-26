@@ -1,8 +1,7 @@
 # Computer Vision Application - Assignment 1
 
-Student: Muhammad Fahad Waqar<br>
-Student No: st125981<br>
-Computer Vision<br>
+Muhammad Fahad Waqar<br>
+st125981<br>
 
 ## Setup and Installation
 
