@@ -21,7 +21,6 @@ class ComputerVisionApp:
         self.trex_vertices = None
         self.trex_faces = None
 
-        # Try loading saved calibration file
         if os.path.exists("camera_calibration.npz"):
             data = np.load("camera_calibration.npz")
             self.camera_matrix = data["camera_matrix"]
@@ -31,18 +30,14 @@ class ComputerVisionApp:
         else:
             print("No saved camera calibration found. Run calibration first.")
 
-        # ArUco detector setup - Fixed for newer OpenCV versions
         try:
-            # Try new API first (OpenCV 4.7+)
             self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
             self.aruco_params = cv2.aruco.DetectorParameters()
         except AttributeError:
             try:
-                # Try intermediate API (OpenCV 4.0-4.6)
                 self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
                 self.aruco_params = cv2.aruco.DetectorParameters_create()
             except AttributeError:
-                # Fallback for very old versions
                 self.aruco_dict = cv2.aruco.dict_get(cv2.aruco.DICT_6X6_250)
                 self.aruco_params = cv2.aruco.DetectorParameters_create()
 
@@ -55,9 +50,8 @@ class ComputerVisionApp:
             vertices = []
             faces = []
             
-            # Try different possible locations for the T-Rex model
             possible_paths = [
-                'assets/trex_model.obj',  # Your actual path first
+                'assets/trex_model.obj',
                 'trex_model.obj',
                 'trex.obj',
                 'models/trex_model.obj',
@@ -78,10 +72,10 @@ class ComputerVisionApp:
                                 parts = line.strip().split()
                                 face = []
                                 for part in parts[1:]:
-                                    face.append(int(part.split('/')[0]) - 1)  # OBJ is 1-indexed
+                                    face.append(int(part.split('/')[0]) - 1) 
                                 faces.append(face)
                     
-                    self.trex_vertices = np.array(vertices, dtype=np.float32) * 20  # Smaller scale
+                    self.trex_vertices = np.array(vertices, dtype=np.float32) * 20 
                     self.trex_faces = faces
                     print(f"Loaded T-Rex model from {path} with {len(vertices)} vertices and {len(faces)} faces")
                     model_loaded = True
@@ -94,31 +88,25 @@ class ComputerVisionApp:
             print(f"Error loading T-Rex model: {e}")
             self.create_default_trex()
     
-    # 1. Color conversion functions
+    # Color conversion functions
     def rgb_to_gray(self, image):
-        """Convert RGB to grayscale"""
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
     def rgb_to_hsv(self, image):
-        """Convert RGB to HSV"""
-        return cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        return cv2.cvtColor(image, cv2.COLOR_BGR2HSV)   
     
     def hsv_to_rgb(self, image):
-        """Convert HSV to RGB"""
-        return cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
+        return cv2.cvtColor(image, cv2.COLOR_HSV2BGR)  
     
     def gray_to_rgb(self, image):
-        """Convert grayscale to RGB"""
         return cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
-    # 2. Contrast and brightness adjustment
+    # Contrast and brightness adjustment
     def adjust_contrast_brightness(self, image, alpha=1.0, beta=0):
-        """Adjust contrast (alpha) and brightness (beta)"""
         return cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
 
-    # 3. Histogram calculation
+    # Histogram calculation
     def calculate_histogram(self, image):
-        """Calculate and display histogram"""
         if len(image.shape) == 3:
             # Color image
             colors = ('b', 'g', 'r')
@@ -143,17 +131,14 @@ class ComputerVisionApp:
 
     # 4. Gaussian filter
     def gaussian_filter(self, image, kernel_size=5, sigma=1.0):
-        """Apply Gaussian filter with changeable parameters"""
         return cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
 
     # 5. Bilateral filter
     def bilateral_filter(self, image, d=9, sigma_color=75, sigma_space=75):
-        """Apply bilateral filter with changeable parameters"""
         return cv2.bilateralFilter(image, d, sigma_color, sigma_space)
 
     # 6. Canny edge detection
     def canny_edge_detection(self, image, low_threshold=50, high_threshold=150):
-        """Apply Canny edge detection"""
         if len(image.shape) == 3:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         else:
@@ -162,7 +147,6 @@ class ComputerVisionApp:
 
     # 7. Hough line detection
     def hough_line_detection(self, image):
-        """Detect lines using Hough Transform"""
         edges = self.canny_edge_detection(image)
         lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=100, 
                                minLineLength=50, maxLineGap=10)
@@ -177,7 +161,6 @@ class ComputerVisionApp:
 
     # 8. Panorama creation (keeping original implementation)
     def create_panorama(self, images):
-        """Create panorama from multiple images - completely from scratch implementation"""
         if len(images) < 2:
             return None
         
@@ -193,7 +176,6 @@ class ComputerVisionApp:
         return result
     
     def stitch_images(self, img1, img2):
-        """Stitch two images together using completely custom implementation"""
         # Convert to grayscale
         gray1 = self.rgb_to_gray(img1)
         gray2 = self.rgb_to_gray(img2)
@@ -226,7 +208,6 @@ class ComputerVisionApp:
         return result
     
     def harris_corner_detection(self, image, k=0.04, threshold=0.01):
-        """Custom Harris corner detection implementation"""
         # Compute gradients
         Ix = self.compute_gradient_x(image)
         Iy = self.compute_gradient_y(image)
@@ -258,17 +239,14 @@ class ComputerVisionApp:
         return corners[:500]  # Limit to top 500 corners
     
     def compute_gradient_x(self, image):
-        """Compute horizontal gradient using Sobel operator"""
         sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=np.float32)
         return self.convolve2d(image, sobel_x)
     
     def compute_gradient_y(self, image):
-        """Compute vertical gradient using Sobel operator"""
         sobel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=np.float32)
         return self.convolve2d(image, sobel_y)
     
     def convolve2d(self, image, kernel):
-        """Custom 2D convolution implementation"""
         h, w = image.shape
         kh, kw = kernel.shape
         pad_h, pad_w = kh // 2, kw // 2
@@ -284,12 +262,10 @@ class ComputerVisionApp:
         return result
     
     def gaussian_smooth(self, image, sigma=1.0, kernel_size=5):
-        """Custom Gaussian smoothing"""
         kernel = self.gaussian_kernel(kernel_size, sigma)
         return self.convolve2d(image, kernel)
     
     def gaussian_kernel(self, size, sigma):
-        """Generate Gaussian kernel"""
         kernel = np.zeros((size, size))
         center = size // 2
         sum_val = 0
@@ -305,7 +281,6 @@ class ComputerVisionApp:
         return kernel / sum_val
     
     def match_features(self, img1, img2, corners1, corners2, window_size=15):
-        """Custom feature matching using normalized cross-correlation"""
         matches = []
         half_window = window_size // 2
         h1, w1 = img1.shape
@@ -347,7 +322,6 @@ class ComputerVisionApp:
         return matches[:50]  # Return top 50 matches
     
     def estimate_homography_ransac(self, matches, max_iterations=1000, threshold=3.0):
-        """Custom RANSAC homography estimation"""
         if len(matches) < 8:
             return None
         
@@ -383,7 +357,6 @@ class ComputerVisionApp:
         return best_H if best_inliers >= 8 else None
     
     def compute_homography_4points(self, matches):
-        """Compute homography from 4 point correspondences"""
         if len(matches) != 4:
             return None
         
@@ -406,7 +379,6 @@ class ComputerVisionApp:
             return None
     
     def transform_point(self, point, H):
-        """Transform a point using homography matrix"""
         x, y = point
         homogeneous = np.array([x, y, 1])
         transformed = H @ homogeneous
@@ -417,7 +389,6 @@ class ComputerVisionApp:
         return (transformed[0] / transformed[2], transformed[1] / transformed[2])
     
     def warp_and_blend_images(self, img1, img2, H):
-        """Custom image warping and blending"""
         h1, w1 = img1.shape[:2]
         h2, w2 = img2.shape[:2]
         
@@ -491,45 +462,39 @@ class ComputerVisionApp:
         return result
     
     def bilinear_interpolate(self, image, x, y):
-        """Bilinear interpolation for sub-pixel sampling"""
         x1, x2 = int(x), int(x) + 1
         y1, y2 = int(y), int(y) + 1
         
         if x2 >= image.shape[1] or y2 >= image.shape[0]:
             return None
         
-        # Get the four neighboring pixels
         I11 = image[y1, x1].astype(np.float32)
         I12 = image[y2, x1].astype(np.float32)
         I21 = image[y1, x2].astype(np.float32)
         I22 = image[y2, x2].astype(np.float32)
         
-        # Compute weights
+        # Computing weights
         wa = (x2 - x) * (y2 - y)
         wb = (x2 - x) * (y - y1)
         wc = (x - x1) * (y2 - y)
         wd = (x - x1) * (y - y1)
         
-        # Interpolate
         interpolated = wa * I11 + wb * I12 + wc * I21 + wd * I22
         
         return np.clip(interpolated, 0, 255).astype(np.uint8)
 
     # 9. Image transformations
     def translate_image(self, image, tx, ty):
-        """Translate image by (tx, ty)"""
         M = np.float32([[1, 0, tx], [0, 1, ty]])
         return cv2.warpAffine(image, M, (image.shape[1], image.shape[0]))
     
     def rotate_image(self, image, angle, center=None):
-        """Rotate image by angle (degrees)"""
         if center is None:
             center = (image.shape[1]//2, image.shape[0]//2)
         M = cv2.getRotationMatrix2D(center, angle, 1.0)
         return cv2.warpAffine(image, M, (image.shape[1], image.shape[0]))
     
     def scale_image(self, image, scale_x, scale_y):
-        """Scale image by scale factors"""
         M = np.float32([[scale_x, 0, 0], [0, scale_y, 0]])
         new_width = int(image.shape[1] * scale_x)
         new_height = int(image.shape[0] * scale_y)
@@ -537,19 +502,17 @@ class ComputerVisionApp:
 
     # 10. Camera calibration with automatic capture
     def calibrate_camera(self, chessboard_size=(9, 6), num_images=20, auto_capture_delay=2.0):
-        """Calibrate camera using chessboard pattern with automatic capture"""
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         
         # Prepare object points
         objp = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
         objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
         
-        objpoints = []  # 3d points in real world space
-        imgpoints = []  # 2d points in image plane
+        objpoints = []
+        imgpoints = []
         
-        print(f"Auto-capturing {num_images} images for calibration...")
+        print(f"Auto-capturing {num_images} images for calibration.")
         print(f"Make sure chessboard is visible. Images will be captured automatically every {auto_capture_delay} seconds when pattern is detected.")
-        print("Press ESC to finish early")
         
         captured = 0
         last_capture_time = 0
@@ -577,10 +540,10 @@ class ComputerVisionApp:
                     captured += 1
                     last_capture_time = current_time
                     print(f"Auto-captured image {captured}/{num_images}")
-                    cv2.putText(display_frame, f"CAPTURED! ({captured}/{num_images})", 
+                    cv2.putText(display_frame, f"Captured ({captured}/{num_images})", 
                                (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                 
-                cv2.putText(display_frame, f"Pattern detected! ({captured}/{num_images})", 
+                cv2.putText(display_frame, f"Pattern detected ({captured}/{num_images})", 
                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
             else:
                 cv2.putText(display_frame, "No pattern detected", 
@@ -620,9 +583,8 @@ class ComputerVisionApp:
 
     # 11. Augmented Reality with ArUco markers and T-Rex model
     def augmented_reality(self, image):
-        """Augmented reality with T-Rex model using ArUco markers - Fixed version"""
         if not self.calibrated:
-            print("Camera not calibrated! Run calibration first.")
+            print("Camera not calibrated. Run calibration first.")
             return image
         
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -648,12 +610,9 @@ class ComputerVisionApp:
                 result = image.copy()
                 cv2.aruco.drawDetectedMarkers(result, corners, ids)
             
-            # For each detected marker, estimate pose and draw T-Rex
             for i, corner in enumerate(corners):
-                # Define marker size in real world (e.g., 5cm = 0.05m)
                 marker_size = 0.05
                 
-                # Estimate pose using solvePnP (most reliable method)
                 try:
                     # Create 3D object points for a square marker
                     half_size = marker_size / 2
@@ -691,7 +650,6 @@ class ComputerVisionApp:
         return image
         
     def draw_trex_on_marker(self, image, rvec, tvec):
-        """Draw the T-Rex model on the detected ArUco marker - Fixed version"""
         try:
             # Ensure rvec and tvec are properly shaped
             rvec = rvec.reshape(-1)
@@ -743,7 +701,6 @@ class ComputerVisionApp:
             return image
     
     def draw_trex_model_safe(self, image, projected_points, valid_indices, index_mapping):
-        """Draw the T-Rex model using projected points with improved safety checks"""
         result = image.copy()
         h, w = image.shape[:2]
         
@@ -760,11 +717,9 @@ class ComputerVisionApp:
                             mapped_idx = index_mapping[vertex_idx]
                             if mapped_idx < len(projected_points):
                                 x, y = projected_points[mapped_idx]
-                                # Check if point is within reasonable screen bounds
                                 if 0 <= x < w and 0 <= y < h:
                                     face_points.append((int(x), int(y)))
                                 else:
-                                    # Allow some points slightly outside screen
                                     if -w//2 < x < w*1.5 and -h//2 < y < h*1.5:
                                         face_points.append((int(np.clip(x, 0, w-1)), 
                                                         int(np.clip(y, 0, h-1))))
@@ -778,11 +733,9 @@ class ComputerVisionApp:
                             valid_face = False
                             break
                     
-                    # Draw the face if it's valid and has enough points
                     if valid_face and len(face_points) >= 3:
                         pts = np.array(face_points, np.int32)
                         
-                        # Simple depth-based coloring (darker for faces further back)
                         # Calculate average Z coordinate for this face
                         face_z = 0
                         valid_z_count = 0
@@ -813,21 +766,20 @@ class ComputerVisionApp:
             return image
     
     def create_default_trex(self):
-        """Create a more visible default T-Rex-like shape"""
         # Create a simpler, more visible T-Rex shape
         self.trex_vertices = np.array([
-            # Main body (rectangular prism)
+            # Main body
             [-2.0, -1.5, 0], [2.0, -1.5, 0], [2.0, 1.5, 0], [-2.0, 1.5, 0],  # bottom face
             [-2.0, -1.5, 3.0], [2.0, -1.5, 3.0], [2.0, 1.5, 3.0], [-2.0, 1.5, 3.0],  # top face
             
-            # Head (front extension)
+            # Head
             [2.0, -1.0, 2.5], [3.5, -1.0, 2.5], [3.5, 1.0, 2.5], [2.0, 1.0, 2.5],  # head bottom
             [2.0, -1.0, 4.0], [3.5, -1.0, 4.0], [3.5, 1.0, 4.0], [2.0, 1.0, 4.0],  # head top
             
-            # Tail (back extension)
+            # Tail
             [-2.0, -0.8, 1.5], [-4.0, -0.5, 1.0], [-4.0, 0.5, 1.0], [-2.0, 0.8, 1.5],  # tail
             
-            # Simple legs (four support pillars)
+            # Simple legs
             [-1.0, -1.0, 0], [-0.5, -1.0, 0], [-0.5, -0.5, 0], [-1.0, -0.5, 0],  # leg 1 base
             [-1.0, -1.0, -2.0], [-0.5, -1.0, -2.0], [-0.5, -0.5, -2.0], [-1.0, -0.5, -2.0],  # leg 1 bottom
             
@@ -836,7 +788,7 @@ class ComputerVisionApp:
             
         ], dtype=np.float32)
         
-        # Flip the model if it appears inverted (flip Y and Z coordinates)
+        # Flip the model if it appears inverted
         self.trex_vertices[:, 1] *= -1  # Flip Y axis
         self.trex_vertices[:, 2] *= -1  # Flip Z axis
         
@@ -858,7 +810,7 @@ class ComputerVisionApp:
             [8, 11, 15, 12],    # left
             [9, 13, 14, 10],    # right
             
-            # Tail faces (triangular)
+            # Tail faces
             [16, 17, 18],       # triangle 1
             [16, 18, 19],       # triangle 2
             
@@ -880,24 +832,21 @@ class ComputerVisionApp:
         ]
 
     def run_demo(self):
-        """Run interactive demo of all features"""
-        print("Computer Vision App Demo")
         print("Controls:")
         print("1: RGB to Gray")
         print("2: RGB to HSV") 
-        print("3: Adjust brightness (+/-)")
+        print("3: Adjust brightness (press +/- to increase/decrease brightness)")
         print("4: Gaussian filter")
         print("5: Bilateral filter")
         print("6: Canny edge detection")
         print("7: Hough line detection")
         print("8: Add frame for panorama")
         print("9: Create panorama")
-        print("0: Augmented Reality (ArUco)")
-        print("c: Calibrate camera (auto-capture)")
+        print("0: Augmented Reality")
+        print("c: Calibrate camera")
         print("h: Show histogram")
         print("r: Reset to normal view")
         print("t: Image transformations")
-        print("s: Save current frame")
         print("ESC: Quit")
         
         current_mode = 'normal'
