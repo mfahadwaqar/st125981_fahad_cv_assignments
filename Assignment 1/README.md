@@ -27,7 +27,6 @@ Press c - Calibrate camera<br>
 Press h - Show histogram<br>
 Press r - Reset to normal view<br>
 Press t - Image transformations<br>
-Press s - Save current frame<br>
 Press ESC - Exit application<br>
 
 ## Important Notes:
